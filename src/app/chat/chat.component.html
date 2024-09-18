@@ -1,0 +1,39 @@
+<div class="chat-container">
+  <!-- Left Column: List of Users -->
+  <div class="user-list">
+    <div class="inner-user">
+      <h2>Users</h2>
+      <ul>
+        <li [ngClass]="{ 'active-user': isSelected(user) }" *ngFor="let user of users" (click)="selectUser(user)">
+          {{ user.username }}
+        </li>
+      </ul>
+    </div>
+    <button class="logoutBtn" (click)="logout()"> Logout</button>
+  </div>
+
+  <!-- Right Column: Chat Box -->
+  <div class="chat-box">
+    <div class="chat-header">
+      <h2 *ngIf="selectedUser; else noUserSelected">
+        Chat with {{ selectedUser.username }}
+      </h2>
+      <ng-template #noUserSelected>
+        <h2>Select a User to Chat</h2>
+      </ng-template>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <!-- Loop through the messages and display them -->
+      <div *ngFor="let message of messages" [ngClass]="{'sent': message.sender === currentUser.username, 'received': message.sender !== currentUser.username}">
+        <strong>{{ message.sender }}:</strong> {{ message.message }}
+      </div>
+    </div>
+
+    <!-- Message input area -->
+    <div *ngIf="selectedUser" class="chat-input">
+      <input [(ngModel)]="newMessage" type="text" placeholder="Type a message..." />
+      <button (click)="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
