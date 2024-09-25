@@ -11,23 +11,37 @@ import { Router } from '@angular/router';
   styleUrls: ['./chat.component.scss']
 })
 export class ChatComponent implements OnInit {
+  superadmin: boolean = false;
+  user_id: number = 0;
   message = '';
   messages: { sender: string, message: string }[] = [];
   user: any = null;
   otherUser: string = '';  // Store the name of the user you want to chat with
-
+  receiver: string = "";
   users = [];
 
-  currentUser = { username: 'Current User' };  // Replace this with the actual logged-in user
+  currentUser = { user_id: 0 };  // Replace this with the actual logged-in user
 
   selectedUser: any = null;
   newMessage = '';
-
+  receiver_name: string="";
   constructor(private chatService: ChatService, private authService: AuthService, private router: Router,) {}
 
   ngOnInit(): void {
     // Retrieve user details from localStorage
     this.user = JSON.parse(localStorage.getItem('user')!);
+    this.superadmin = JSON.parse(localStorage.getItem('superadmin'));
+    if(this.superadmin != true){
+      this.receiver = this.user.id;
+      this.receiver_name = 'DG(QM)'
+      this.fetchMessages();
+    }else{
+      this.user_id = 1;
+      this.fetchMessages();
+
+    }
+    this.currentUser.user_id = this.user_id;
+    console.log('current user is:',this.user);
     if (!this.user) {
       console.error('User not found in localStorage, redirect to login');
       // Optionally, redirect to login if no user is found
@@ -37,38 +51,45 @@ export class ChatComponent implements OnInit {
   }
 
   getUsers(){
-    this.authService.getUsers().subscribe(
-      (res: any[]) => {
-        if(this.user.username === 'DG(QM)'){
-          const filteredUsers = res.filter(item => (item.username !== this.user.username) && (item.username !== 'admin'));
-          this.users = filteredUsers;
-        }
-        else{
-          const filteredUsers = res.filter(item => (item.username === 'DG(QM)') && (item.username !== 'admin'));
-          this.users = filteredUsers;
-        }
-      },
-      (error) => {
-        console.error('Error fetching users:', error);
+    var list= [];
+this.chatService.getUsers().subscribe(
+  (res: any) => {
+    console.log(this.user.username);
+    
+    // Access the array from the 'data' field
+    const usersArray = res.data; 
+
+    if (Array.isArray(usersArray)) {
+      if (this.user.username === 'DGQM') {
+        const filteredUsers = usersArray.filter(item => (item.username !== this.user.username) && (item.username !== 'admin'));
+        this.users = filteredUsers;
+      } else {
+        const filteredUsers = usersArray.filter(item => (item.username === 'DGQM') && (item.username !== 'admin'));
+        this.users = filteredUsers;
       }
-    );
+    } else {
+      console.warn('Data is not an array:', usersArray);
+    }
+  },
+  (error) => {
+    console.error('Error fetching users:', error);
+  }
+);
+
   }
 
-  selectUser(user: any) {
-    this.selectedUser = user;
-    this.messages = [];  // Clear messages for the new chat session
-    // Logic to load chat history from the backend can go here
-    if (this.selectedUser) {
-      // alert(this.selectedUser);
-      // Create a unique room name using both users' usernames
-      const roomName = this.generateRoomName(this.user.username, this.selectedUser.username);
-      this.chatService.connect(roomName);
-
-      // Subscribe to messages coming from WebSocket
-      this.chatService.getMessages().subscribe((data: any) => {
-        this.messages.push({ sender: data.sender, message: data.message });
-      });
+  selectReceiver(user: any) {
+    if(this.superadmin != true){
+      this.receiver = this.user.id;
+      this.fetchMessages();
+    }else{
+      this.user_id = 1;
+      this.receiver = user.id;
+      this.fetchMessages();
+      
     }
+    this.receiver_name = user.username;
+    console.log('my receiver is:',this.receiver)
   }
 
   isSelected(user: any): boolean {
@@ -83,18 +104,33 @@ export class ChatComponent implements OnInit {
   // Method to send a message
   sendMessage() {
     // alert(this.newMessage)
-    if (this.newMessage.trim()) {
-      this.chatService.sendMessage(this.newMessage, this.user.username);  // Send message with the user's name
-      this.newMessage = '';  // Clear the input field after sending
-    }
-  }
-
-  logout() {
-    this.authService.logout().subscribe(response => {
-      // Clear localStorage and cookies
-      localStorage.clear();
-      this.router.navigate(['/login']);
+    console.log('current user:',this.user_id, 'receiver:',this.receiver, 'message:',this.newMessage);
+    var result = this.chatService.sendMessage(
+      this.user_id, 
+      this.receiver,
+      this.newMessage).subscribe((response: any) => {
+      console.log(response)
+      if(response.success == true){
+        this.fetchMessages();
+        this.newMessage = "";
+      }
+    }, err => {
+      return "NotAuthorized";
     });
   }
-  
+
+   fetchMessages() {
+    this.chatService
+      .fetchMessages(this.user_id,this.receiver)
+      .subscribe((response: any) => {
+        this.messages = response.data;
+        console.log('this is the list of messages',this.messages);
+      });
+  }
+  logout() {
+    this.authService.logout();  // If logout is a synchronous method
+    // Clear localStorage and cookies
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
 }

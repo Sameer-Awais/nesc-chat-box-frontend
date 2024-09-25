@@ -1,28 +1,31 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+  import { Injectable } from '@angular/core';
+  import { Observable } from 'rxjs';import { GlobalVariable } from '../_helpers/globals';
+  
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AuthService {
+    readonly rootURL = GlobalVariable.ROOT_URL;
+    access_token = localStorage.getItem("session_token");
+    
+    constructor(private http: HttpClient) {}
+    // header = {
+    //   headers: new HttpHeaders().set(
+    //     "Authorization",
+    //     `Bearer ${this.access_token.replace(/['"]+/g, "")}`
+    //   ),
+    // };
+    login(username,password){
+      var formdata = new FormData();
+      formdata.append("username", username.toString());
+      formdata.append("password", password.toString());
+      //formdata.append("user_type", data.user_type.toString());
+     
+      return this.http.post(this.rootURL + "chat/login/", formdata);
+    }
+    logout() {
+      localStorage.clear();
+    }
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthService {
-  private baseUrl = 'http://localhost:8000/api';  // Update with your backend URL
-
-  constructor(private http: HttpClient) {}
-
-  login(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/login/`, { username, password });
-  }
-
-  logout(): Observable<any> {
-    return this.http.post(`${this.baseUrl}/logout/`, {});
-  }
-
-  getProfile(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/profile/`);  // Get logged-in user's profile
-  }
-
-  getUsers(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/users/`);  // Fetch the list of users
-  }
 }

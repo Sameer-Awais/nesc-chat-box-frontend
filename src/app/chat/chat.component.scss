@@ -155,3 +155,73 @@
     height: calc(100vh - 150px);
   }
 }
+
+
+
+
+
+
+// .sent{
+//   background-color: #4CAF50;
+//   color: white;
+//   align-self: flex-end;
+//   border-bottom-right-radius: 0;
+//   float: left;
+// }
+// .received{
+//   background-color: #4cafaf;
+//   color: white;
+//   align-self: flex-end;
+//   border-bottom-right-radius: 0;
+//   float: right;
+// }
+
+
+/* Container for the chat messages */
+// .chat-container {
+//   padding: 20px;
+//   display: flex;
+//   flex-direction: column;
+//   height: 100vh;
+//   overflow-y: auto;
+//   background-color: #f4f4f9;
+// }
+ul, li {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+/* Generic styling for each <li> message bubble */
+.chat-messages li {
+  display: inline-block; /* Allows the li to shrink or expand based on text */
+  max-width: 60%; /* Limits the maximum width of the bubble */
+  padding: 10px 15px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word; /* Ensures long words wrap to the next line */
+}
+
+/* Sent messages (user's messages) */
+li.sent {
+  background-color: #4CAF50;
+  color: white;
+  align-self: flex-end;  /* This aligns the sent messages to the right */
+  border-bottom-right-radius: 0;
+  text-align: right;
+  margin-left: 80%;
+  
+}
+
+/* Received messages (messages from others) */
+li.received {
+  background-color: #e5e5ea;
+  color: black;
+  align-self: flex-start;
+  border-bottom-left-radius: 0;
+  text-align: left;
+
+  
+}
+

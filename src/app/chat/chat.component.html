@@ -4,7 +4,7 @@
     <div class="inner-user">
       <h2>Users</h2>
       <ul>
-        <li [ngClass]="{ 'active-user': isSelected(user) }" *ngFor="let user of users" (click)="selectUser(user)">
+        <li [ngClass]="{ 'active-user': isSelected(user) }" *ngFor="let user of users" (click)="selectReceiver(user)">
           {{ user.username }}
         </li>
       </ul>
@@ -15,8 +15,10 @@
   <!-- Right Column: Chat Box -->
   <div class="chat-box">
     <div class="chat-header">
-      <h2 *ngIf="selectedUser; else noUserSelected">
-        Chat with {{ selectedUser.username }}
+      <h2 *ngIf="user; else noUserSelected">
+        <span *ngIf="superadmin != true;">Chat with DG(QM)</span>
+        <span *ngIf="superadmin == true;">Chat with {{this.receiver_name}}</span>
+        
       </h2>
       <ng-template #noUserSelected>
         <h2>Select a User to Chat</h2>
@@ -25,13 +27,20 @@
 
     <div class="chat-messages" id="chatMessages">
       <!-- Loop through the messages and display them -->
-      <div *ngFor="let message of messages" [ngClass]="{'sent': message.sender === currentUser.username, 'received': message.sender !== currentUser.username}">
-        <strong>{{ message.sender }}:</strong> {{ message.message }}
-      </div>
+      <!-- <div *ngFor="let message of messages" [ngClass]="{'sent': message.user === currentUser.user_id, 'received': message.user !== currentUser.user_id}">
+        <span><strong >You:</strong> {{ message.content }}</span><br>
+      </div> -->
+      <ul *ngFor="let message of messages">
+        <li [ngClass]="{'sent': message.user === currentUser.user_id,'received': message.user !== currentUser.user_id}">
+          <strong *ngIf="message.user === currentUser.user_id">You:</strong> 
+          <strong *ngIf="message.user !== currentUser.user_id">{{this.receiver_name}}:</strong> 
+          
+          {{ message.content }}<br>{{ message.timestamp | date: 'MM/dd/yyyy hh:mm a' }}</li><br><br>
+      </ul>
     </div>
 
     <!-- Message input area -->
-    <div *ngIf="selectedUser" class="chat-input">
+    <div *ngIf="receiver" class="chat-input">
       <input [(ngModel)]="newMessage" type="text" placeholder="Type a message..." />
       <button (click)="sendMessage()">Send</button>
     </div>

@@ -1,47 +1,60 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-
+import { GlobalVariable } from "../_helpers/globals";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
-  private socket: WebSocket;
-  private messageSubject: Subject<any> = new Subject<any>();
+  readonly rootUrl = GlobalVariable.ROOT_URL;
+  access_token =
+    localStorage.getItem("session_token") == null
+      ? ""
+      : localStorage.getItem("session_token");
+  constructor(private http: HttpClient) {}
 
-  connect(roomName: string) {
-    const url = `ws://localhost:8000/ws/chat/${roomName}/`;  // Ensure the URL matches the backend route
-    this.socket = new WebSocket(url);
+  header = {
+    headers: new HttpHeaders().set(
+      "Authorization",
+      `Bearer ${this.access_token.replace(/['"]+/g, "")}`
+    ),
+  };
+  login(
+    username,
+    password,
+  ){
+    var formdata = new FormData();
+    formdata.append("username", username.toString());
+    formdata.append("password", password.toString());
 
-    this.socket.onopen = () => {
-      console.log('WebSocket connection established');
-    };
-
-    this.socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      this.messageSubject.next(data);  // Pass the incoming message to subscribers
-    };
-
-    this.socket.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-
-    this.socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    return this.http.post(
+      this.rootUrl + "chat/login/",formdata,this.header
+    );
   }
+  
+  sendMessage(
+    sender,
+    receiver,
+    message,
+  ) {
+    var formdata = new FormData();
+    formdata.append("sender", sender.toString());
+    formdata.append("receiver", receiver.toString());
+    formdata.append("message", message.toString());
 
-  sendMessage(message: string, sender: string) {
-    // alert(message);
-    // alert(sender);
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      const messageData = JSON.stringify({ message, sender });
-      this.socket.send(messageData);  // Ensure the message is being sent correctly
-    } else {
-      console.error('WebSocket connection is not open');
-    }
+    return this.http.post(
+      this.rootUrl + "chat/sendMessage/",
+      formdata
+    );
   }
-
-  getMessages(): Observable<any> {
-    return this.messageSubject.asObservable();
+  fetchMessages(sender,receiver){
+    console.log('this is the header',this.header);
+    return this.http.get(
+      this.rootUrl + "chat/fetchMessages/?sender=" + sender + "&receiver=" + receiver);
+  }
+  getUsers() {
+    console.log('this is the header',this.header);
+    return this.http.get(
+      this.rootUrl + "chat/users/");
   }
 }
