@@ -1,11 +1,6 @@
-// global.ts
+// let root_address = "http://127.0.0.1:8000/";
 
-//dev
-
-let root_address = "http://127.0.0.1:8000/"; // Ubuntu domain
-// let root_address = "http://qmportal.nescom.gov/";
-// let root_address='http://192.168.10.11:8001/';
-// let root_address='http://130.1.1.34:8001/'; // Windows Domain
+let root_address='http://130.1.1.96:8001/';
 
 export const GlobalVariable = Object.freeze({
   // Rool URL

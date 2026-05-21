@@ -16,6 +16,8 @@
   justify-content: space-between;
   align-items: center;
   .inner-user{
+    overflow-y: auto;
+    max-height: calc(100vh - 20px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -223,5 +225,65 @@ li.received {
   text-align: left;
 
   
+}
+
+
+.forward-list {
+  // background-color: #2c3e50;
+  color: white;
+  // padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  .inner-user{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    ul{
+      list-style-type: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      width: 100%;
+      li{
+        display: flex;
+        justify-content: center;
+        padding: 5px 15px;
+        margin-bottom: 10px;
+        background-color: grey;
+        border-radius: 5px;
+        cursor: pointer;
+        &:hover{
+          background-color: #1abc9c;
+        }
+      }
+      .active-user{
+          background-color: #1abc9c !important;
+      }
+    }
+  }
+  .fwdBtn{
+    margin-bottom: 7px;
+    background: #ccc;
+    color: black;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 15px;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    &:hover{
+      background: black;
+      color: white;
+    }
+  }
 }
 

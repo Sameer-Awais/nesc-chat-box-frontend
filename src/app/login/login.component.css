@@ -8,6 +8,22 @@
     background-color: #f0f2f5;
     font-family: Arial, sans-serif;
   }
+
+  input{
+    width: 300px;
+    padding: 10px;
+  }
+
+  button{
+    padding: 10px;
+    color: white;
+    background: green;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
   
   /* Styling for the login form */
   .login-form {

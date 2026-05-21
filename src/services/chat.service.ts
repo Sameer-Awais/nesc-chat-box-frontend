@@ -11,6 +11,7 @@ export class ChatService {
     localStorage.getItem("session_token") == null
       ? ""
       : localStorage.getItem("session_token");
+
   constructor(private http: HttpClient) {}
 
   header = {
@@ -43,18 +44,35 @@ export class ChatService {
     formdata.append("message", message.toString());
 
     return this.http.post(
-      this.rootUrl + "chat/sendMessage/",
+      this.rootUrl + "ams/sendMessage/",
       formdata
     );
   }
+
+  forwardMessage(
+    sender,
+    receiver,
+    message,
+  ) {
+    var formdata = new FormData();
+    formdata.append("sender", sender.toString());
+    formdata.append("receiver", receiver.toString());
+    formdata.append("message", message.toString());
+
+    return this.http.post(
+      this.rootUrl + "ams/forwardMessage/",
+      formdata
+    );
+  }
+
   fetchMessages(sender,receiver){
     console.log('this is the header',this.header);
     return this.http.get(
-      this.rootUrl + "chat/fetchMessages/?sender=" + sender + "&receiver=" + receiver);
+      this.rootUrl + "ams/fetchMessages/?sender=" + sender + "&receiver=" + receiver);
   }
   getUsers() {
     console.log('this is the header',this.header);
     return this.http.get(
-      this.rootUrl + "chat/users/");
+      this.rootUrl + "usermanagement/getchatuser/");
   }
 }

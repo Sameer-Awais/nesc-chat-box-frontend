@@ -25,7 +25,7 @@ export class LoginComponent {
         console.log('these are user details',this.token);
         localStorage.setItem('user', JSON.stringify(this.userDetails));  // Store user in local storage
         localStorage.setItem("session_token",JSON.stringify(this.token));
-        localStorage.setItem("superadmin",JSON.stringify(this.userDetails.superadmin));
+        localStorage.setItem("superadmin",JSON.stringify(this.userDetails.is_superuser));
         if(this.userDetails !=''){
           this.router.navigateByUrl("/chat");
 

@@ -16,9 +16,8 @@
   <div class="chat-box">
     <div class="chat-header">
       <h2 *ngIf="user; else noUserSelected">
-        <span *ngIf="superadmin != true;">Chat with DG(QM)</span>
-        <span *ngIf="superadmin == true;">Chat with {{this.receiver_name}}</span>
-        
+        <span *ngIf="this.receiver_name">Chat with {{this.receiver_name}}</span>
+        <span *ngIf="!this.receiver_name">Chat</span>
       </h2>
       <ng-template #noUserSelected>
         <h2>Select a User to Chat</h2>
@@ -27,22 +26,38 @@
 
     <div class="chat-messages" id="chatMessages">
       <!-- Loop through the messages and display them -->
-      <!-- <div *ngFor="let message of messages" [ngClass]="{'sent': message.user === currentUser.user_id, 'received': message.user !== currentUser.user_id}">
+      <!-- <div *ngFor="let message of messages" [ngClass]="{'sent': message.user === currentUser.sender_id, 'received': message.user !== currentUser.sender_id}">
         <span><strong >You:</strong> {{ message.content }}</span><br>
       </div> -->
       <ul *ngFor="let message of messages">
-        <li [ngClass]="{'sent': message.user === currentUser.user_id,'received': message.user !== currentUser.user_id}">
-          <strong *ngIf="message.user === currentUser.user_id">You:</strong> 
-          <strong *ngIf="message.user !== currentUser.user_id">{{this.receiver_name}}:</strong> 
+        <li [ngClass]="{'sent': message.sender === currentUser.sender_id,'received': message.sender != currentUser.sender_id}">
+          <strong *ngIf="message.sender === currentUser.sender_id">You:</strong> 
+          <strong *ngIf="message.sender != currentUser.sender_id">{{this.receiver_name}}:</strong> 
           
-          {{ message.content }}<br>{{ message.timestamp | date: 'MM/dd/yyyy hh:mm a' }}</li><br><br>
+          {{ message.content }}<br>{{ message.timestamp | date: 'MM/dd/yyyy hh:mm a' }}
+        </li><br>
       </ul>
     </div>
 
     <!-- Message input area -->
-    <div *ngIf="receiver" class="chat-input">
+    <div *ngIf="receiver" class="chat-input" style="position: relative;">
       <input [(ngModel)]="newMessage" type="text" placeholder="Type a message..." />
       <button (click)="sendMessage()">Send</button>
+      <button style="background: blue;" (click)="forwardClick()">Forward</button>
+
+      <div *ngIf="is_forward && this.newMessage != ''" class="forward-list" style=" width: 250px; min-height: 500px; max-height: 500px; padding: 8px; border-radius: 8px; position: absolute; bottom: 70px; right: 30px; cursor: pointer; background: blue; z-index: 9999; overflow-y: auto; overflow-x: hidden;">
+        <div class="inner-user">
+          <span (click)="forwardCloseClick()" style="cursor: pointer; font-weight: 500; font-size: 18px; color: white; background: red; padding: 6px; border-radius: 6px;">Close</span>
+          <h2>Select Users</h2>
+          <ul>
+            <li [ngClass]="{ 'active-user': this.forward_users_list.includes(user.id)}" *ngFor="let user of users" (click)="selectForwarReceiver(user)">
+              {{ user.username }}
+            </li>
+          </ul>
+        </div>
+        <button class="fwdBtn" (click)="forwardMessage()">Forward Message</button>
+      </div>
+
     </div>
   </div>
 </div>

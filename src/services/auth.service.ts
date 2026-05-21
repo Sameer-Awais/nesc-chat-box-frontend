@@ -22,7 +22,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
       formdata.append("password", password.toString());
       //formdata.append("user_type", data.user_type.toString());
      
-      return this.http.post(this.rootURL + "chat/login/", formdata);
+      return this.http.post(this.rootURL + "usermanagement/UserLogin/", formdata);
     }
     logout() {
       localStorage.clear();

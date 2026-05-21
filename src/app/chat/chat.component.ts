@@ -11,8 +11,9 @@ import { Router } from '@angular/router';
   styleUrls: ['./chat.component.scss']
 })
 export class ChatComponent implements OnInit {
+  interval: any;
   superadmin: boolean = false;
-  user_id: number = 0;
+  sender_id: number = 0;
   message = '';
   messages: { sender: string, message: string }[] = [];
   user: any = null;
@@ -20,53 +21,59 @@ export class ChatComponent implements OnInit {
   receiver: string = "";
   users = [];
 
-  currentUser = { user_id: 0 };  // Replace this with the actual logged-in user
+  currentUser = { sender_id: 0 };  // Replace this with the actual logged-in user
 
   selectedUser: any = null;
   newMessage = '';
   receiver_name: string="";
+
+  forward_users_list = [];
+  is_forward: boolean = false;
+
   constructor(private chatService: ChatService, private authService: AuthService, private router: Router,) {}
 
   ngOnInit(): void {
     // Retrieve user details from localStorage
     this.user = JSON.parse(localStorage.getItem('user')!);
     this.superadmin = JSON.parse(localStorage.getItem('superadmin'));
-    if(this.superadmin != true){
-      this.receiver = this.user.id;
-      this.receiver_name = 'DG(QM)'
-      this.fetchMessages();
-    }else{
-      this.user_id = 1;
-      this.fetchMessages();
-
-    }
-    this.currentUser.user_id = this.user_id;
-    console.log('current user is:',this.user);
-    if (!this.user) {
-      console.error('User not found in localStorage, redirect to login');
-      // Optionally, redirect to login if no user is found
-    }
 
     this.getUsers();
+
+    this.currentUser.sender_id = this.user.id;
+
+    // Set up interval to call fetchMessages
+    this.interval = setInterval(() => {
+      if (this.selectedUser) {
+        this.fetchMessages();
+      }
+    }, 2000); // 2000ms = 2 secondss
+
+  }
+
+  ngOnDestroy(): void {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
   }
 
   getUsers(){
     var list= [];
-this.chatService.getUsers().subscribe(
-  (res: any) => {
-    console.log(this.user.username);
-    
+  this.chatService.getUsers().subscribe(
+  (res: any) => {  
     // Access the array from the 'data' field
     const usersArray = res.data; 
 
     if (Array.isArray(usersArray)) {
-      if (this.user.username === 'DGQM') {
-        const filteredUsers = usersArray.filter(item => (item.username !== this.user.username) && (item.username !== 'admin'));
+      const filteredUsers = usersArray.filter(item => (item.username !== this.user.username));
         this.users = filteredUsers;
-      } else {
-        const filteredUsers = usersArray.filter(item => (item.username === 'DGQM') && (item.username !== 'admin'));
-        this.users = filteredUsers;
-      }
+
+      // if (this.user.username === 'DGQM') {
+      //   const filteredUsers = usersArray.filter(item => (item.username !== this.user.username));
+      //   this.users = filteredUsers;
+      // } else {
+      //   const filteredUsers = usersArray.filter(item => (item.username === 'DGQM'));
+      //   this.users = filteredUsers;
+      // }
     } else {
       console.warn('Data is not an array:', usersArray);
     }
@@ -78,18 +85,54 @@ this.chatService.getUsers().subscribe(
 
   }
 
-  selectReceiver(user: any) {
-    if(this.superadmin != true){
-      this.receiver = this.user.id;
-      this.fetchMessages();
-    }else{
-      this.user_id = 1;
-      this.receiver = user.id;
-      this.fetchMessages();
-      
+  selectReceiver(selectedUser: any) {
+
+    this.receiver_name = selectedUser.username;
+    this.selectedUser = selectedUser;
+
+    this.sender_id = selectedUser.id;
+    this.receiver = this.user.id;
+    this.fetchMessages();  
+    this.sender_id = this.user.id;
+    this.receiver = selectedUser.id; 
+
+    // if(this.user.username != 'DGQM'){
+    //   this.sender_id = selectedUser.id;
+    //   this.receiver = this.user.id;
+    //   this.fetchMessages();
+
+    //   this.sender_id = this.user.id;
+    //   this.receiver = selectedUser.id; 
+    // }
+    // else{
+    //   this.sender_id = selectedUser.id;
+    //   this.receiver = this.user.id;
+    //   this.fetchMessages();  
+    //   this.sender_id = this.user.id;
+    //   this.receiver = selectedUser.id; 
+    // }
+
+  }
+
+  forwardClick(){
+    if(this.newMessage === ""){
+      return
     }
-    this.receiver_name = user.username;
-    console.log('my receiver is:',this.receiver)
+    this.is_forward = !this.is_forward;
+  }
+
+  forwardCloseClick(){
+    this.is_forward = !this.is_forward;
+    this.forward_users_list = [];
+  }
+
+  selectForwarReceiver(selectedUser: any) {
+    if(this.forward_users_list.includes(selectedUser.id)){
+      this.forward_users_list = this.forward_users_list.filter(user => user !== selectedUser.id);
+    }
+    else{
+      this.forward_users_list.push(selectedUser.id)
+    }
   }
 
   isSelected(user: any): boolean {
@@ -103,13 +146,13 @@ this.chatService.getUsers().subscribe(
 
   // Method to send a message
   sendMessage() {
-    // alert(this.newMessage)
-    console.log('current user:',this.user_id, 'receiver:',this.receiver, 'message:',this.newMessage);
+    if(this.newMessage === ""){
+      return
+    }
     var result = this.chatService.sendMessage(
-      this.user_id, 
+      this.sender_id, 
       this.receiver,
       this.newMessage).subscribe((response: any) => {
-      console.log(response)
       if(response.success == true){
         this.fetchMessages();
         this.newMessage = "";
@@ -119,9 +162,28 @@ this.chatService.getUsers().subscribe(
     });
   }
 
+  forwardMessage() {
+    if(this.forward_users_list.length === 0 || this.newMessage === ""){
+      return
+    }
+    var result = this.chatService.forwardMessage(
+      this.sender_id, 
+      this.forward_users_list.join(","),
+      this.newMessage).subscribe((response: any) => {
+      if(response.success == true){
+        this.fetchMessages();
+        this.newMessage = "";
+        this.forward_users_list = []
+        this.is_forward = false
+      }
+    }, err => {
+      return "NotAuthorized";
+    });
+  }
+
    fetchMessages() {
     this.chatService
-      .fetchMessages(this.user_id,this.receiver)
+      .fetchMessages(this.sender_id,this.receiver)
       .subscribe((response: any) => {
         this.messages = response.data;
         console.log('this is the list of messages',this.messages);
