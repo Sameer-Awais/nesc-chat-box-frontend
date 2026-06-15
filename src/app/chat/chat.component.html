@@ -4,8 +4,9 @@
     <div class="inner-user">
       <h2>Users</h2>
       <ul>
-        <li [ngClass]="{ 'active-user': isSelected(user) }" *ngFor="let user of users" (click)="selectReceiver(user)">
-          {{ user.username }}
+        <li [ngClass]="{ 'active-user': isSelected(user), 'has-unread': hasUnread(user) }" *ngFor="let user of users" (click)="selectReceiver(user)">
+          <span *ngIf="hasUnread(user)" class="unread-dot" aria-label="New messages"></span>
+          <span class="user-name">{{ user.first_name }} {{ user.last_name }}</span>
         </li>
       </ul>
     </div>
@@ -41,9 +42,10 @@
 
     <!-- Message input area -->
     <div *ngIf="receiver" class="chat-input" style="position: relative;">
-      <input [(ngModel)]="newMessage" type="text" placeholder="Type a message..." />
+      <input [(ngModel)]="newMessage" type="text" placeholder="Type a message..." (keydown.enter)="sendMessage()" />
       <button (click)="sendMessage()">Send</button>
       <button style="background: blue;" (click)="forwardClick()">Forward</button>
+      <p *ngIf="forwardWarning" class="forward-warning">{{ forwardWarning }}</p>
 
       <div *ngIf="is_forward && this.newMessage != ''" class="forward-list" style=" width: 250px; min-height: 500px; max-height: 500px; padding: 8px; border-radius: 8px; position: absolute; bottom: 70px; right: 30px; cursor: pointer; background: blue; z-index: 9999; overflow-y: auto; overflow-x: hidden;">
         <div class="inner-user">
@@ -51,7 +53,7 @@
           <h2>Select Users</h2>
           <ul>
             <li [ngClass]="{ 'active-user': this.forward_users_list.includes(user.id)}" *ngFor="let user of users" (click)="selectForwarReceiver(user)">
-              {{ user.username }}
+              {{ user.first_name }} {{ user.last_name }}
             </li>
           </ul>
         </div>
