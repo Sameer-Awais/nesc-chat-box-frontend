@@ -214,13 +214,36 @@ export class ChatComponent implements OnInit {
     this.users.sort((a: any, b: any) => {
       const timeA = this.lastMessageTimestamps[this.normalizeUserId(a.id)] || 0;
       const timeB = this.lastMessageTimestamps[this.normalizeUserId(b.id)] || 0;
-
-      if (timeB !== timeA) {
+  
+      const hasChatA = timeA > 0;
+      const hasChatB = timeB > 0;
+  
+      // Chat users always come before non-chat users
+      if (hasChatA && !hasChatB) {
+        return -1;
+      }
+  
+      if (!hasChatA && hasChatB) {
+        return 1;
+      }
+  
+      // Both have chats -> sort by latest message
+      if (hasChatA && hasChatB) {
         return timeB - timeA;
       }
-
+  
+      // Neither has chats -> sort by seniority
+      const seniorityA = Number(a.seniority_number) || Number.MAX_SAFE_INTEGER;
+      const seniorityB = Number(b.seniority_number) || Number.MAX_SAFE_INTEGER;
+  
+      if (seniorityA !== seniorityB) {
+        return seniorityA - seniorityB;
+      }
+  
+      // Final fallback
       const nameA = `${a.first_name} ${a.last_name}`.toLowerCase();
       const nameB = `${b.first_name} ${b.last_name}`.toLowerCase();
+  
       return nameA.localeCompare(nameB);
     });
   }
@@ -267,14 +290,6 @@ export class ChatComponent implements OnInit {
       const filteredUsers = usersArray.filter(item => (item.username !== this.user.username));
         this.users = filteredUsers;
         this.refreshUnreadCounts();
-
-      // if (this.user.username === 'DGQM') {
-      //   const filteredUsers = usersArray.filter(item => (item.username !== this.user.username));
-      //   this.users = filteredUsers;
-      // } else {
-      //   const filteredUsers = usersArray.filter(item => (item.username === 'DGQM'));
-      //   this.users = filteredUsers;
-      // }
     } else {
       console.warn('Data is not an array:', usersArray);
     }

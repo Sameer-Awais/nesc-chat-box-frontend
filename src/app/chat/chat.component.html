@@ -26,10 +26,6 @@
     </div>
 
     <div class="chat-messages" id="chatMessages">
-      <!-- Loop through the messages and display them -->
-      <!-- <div *ngFor="let message of messages" [ngClass]="{'sent': message.user === currentUser.sender_id, 'received': message.user !== currentUser.sender_id}">
-        <span><strong >You:</strong> {{ message.content }}</span><br>
-      </div> -->
       <ul *ngFor="let message of messages">
         <li [ngClass]="{'sent': message.sender === currentUser.sender_id,'received': message.sender != currentUser.sender_id}">
           <strong *ngIf="message.sender === currentUser.sender_id">You:</strong> 
